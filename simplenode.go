@@ -1,18 +1,15 @@
 package mygeth
 
 import (
-	"encoding/hex"
 	clog "log"
 	"os"
 	"path/filepath"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/contracts/release"
 	"github.com/ethereum/go-ethereum/eth"
 	"github.com/ethereum/go-ethereum/eth/downloader"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/node"
-	"github.com/ethereum/go-ethereum/params"
 )
 
 const (
@@ -35,11 +32,11 @@ func defaultNodeConfig(dataDir string) node.Config {
 	cfg := node.DefaultConfig
 	cfg.Name = clientIdentifier
 	cfg.Version = "1.7.0-unstable"
-	cfg.HTTPModules = append(cfg.HTTPModules, "eth", "shh")
-	cfg.WSModules = append(cfg.WSModules, "eth", "shh")
-	cfg.IPCPath = "geth.ipc" //no ipc
 	cfg.DataDir = dataDir
 	cfg.NoUSB = true
+	cfg.IPCPath = ""
+	cfg.HTTPHost = ""
+	cfg.WSHost = ""
 	setP2PConfig(&cfg.P2P)
 	return cfg
 }
@@ -55,7 +52,7 @@ func MakeFullNode(dataDir string) *node.Node {
 	ethConf := eth.DefaultConfig
 	ethConf.SyncMode = downloader.FastSync
 	ethConf.MaxPeers = 25
-	ethConf.LightPeers = 20
+	ethConf.LightPeers = 0
 	ethConf.DatabaseHandles = 1024
 	ethConf.EthashDatasetDir = filepath.Join(nodeConf.DataDir, "ethash")
 	err = stack.Register(func(ctx *node.ServiceContext) (node.Service, error) {
@@ -63,21 +60,6 @@ func MakeFullNode(dataDir string) *node.Node {
 	})
 	if err != nil {
 		clog.Fatalf("Failed to register the Ethereum service: %v", err)
-	}
-
-	err = stack.Register(func(ctx *node.ServiceContext) (node.Service, error) {
-		config := release.Config{
-			Oracle: relOracle,
-			Major:  uint32(params.VersionMajor),
-			Minor:  uint32(params.VersionMinor),
-			Patch:  uint32(params.VersionPatch),
-		}
-		commit, _ := hex.DecodeString(gitCommit)
-		copy(config.Commit[:], commit)
-		return release.NewReleaseService(ctx, config)
-	})
-	if err != nil {
-		clog.Fatalf("Failed to register oracle: %v", err)
 	}
 
 	return stack
