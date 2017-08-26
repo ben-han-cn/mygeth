@@ -31,25 +31,22 @@ func initLog() {
 	log.Root().SetHandler(glogger)
 }
 
-func defaultNodeConfig() node.Config {
+func defaultNodeConfig(dataDir string) node.Config {
 	cfg := node.DefaultConfig
 	cfg.Name = clientIdentifier
 	cfg.Version = "1.7.0-unstable"
 	cfg.HTTPModules = append(cfg.HTTPModules, "eth", "shh")
 	cfg.WSModules = append(cfg.WSModules, "eth", "shh")
 	cfg.IPCPath = "geth.ipc" //no ipc
-	//cfg.HTTPHost = "" //no http
-	//cfg.DataDir = "/home/vagrant/workspace/code/go/src/mygeth/cmd/ethdata"
-	cfg.DataDir = "/data/test/ethdata"
+	cfg.DataDir = dataDir
 	cfg.NoUSB = true
 	setP2PConfig(&cfg.P2P)
 	return cfg
 }
 
-func MakeFullNode() *node.Node {
+func MakeFullNode(dataDir string) *node.Node {
 	initLog()
-	nodeConf := defaultNodeConfig()
-	clog.Printf("---->node config %v\n", nodeConf)
+	nodeConf := defaultNodeConfig(dataDir)
 	stack, err := node.New(&nodeConf)
 	if err != nil {
 		clog.Fatalf("create node failed: %v", err)
@@ -62,7 +59,6 @@ func MakeFullNode() *node.Node {
 	ethConf.DatabaseHandles = 1024
 	ethConf.EthashDatasetDir = filepath.Join(nodeConf.DataDir, "ethash")
 	err = stack.Register(func(ctx *node.ServiceContext) (node.Service, error) {
-		clog.Printf("---->eth config %v\n", ethConf)
 		return eth.New(ctx, &ethConf)
 	})
 	if err != nil {
