@@ -9,3 +9,7 @@ go get gopkg.in/fatih/set.v0
 go get github.com/rs/cors
 go get github.com/jackpal/go-nat-pmp
 go get github.com/aristanetworks/goarista
+go get github.com/huin/goupnp
+go get github.com/jackpal/go-nat-pmp
+go get golang.org/x/crypto
+
