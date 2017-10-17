@@ -4,3 +4,4 @@ go get -u github.com/davecgh/go-spew/spew
 go get github.com/btcsuite/btcd/btcec
 go get github.com/syndtr/goleveldb/leveldb
 go get github.com/go-stack/stack
+go get github.com/fjl/gencodec
