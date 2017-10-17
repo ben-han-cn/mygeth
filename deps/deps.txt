@@ -5,3 +5,7 @@ go get github.com/btcsuite/btcd/btcec
 go get github.com/syndtr/goleveldb/leveldb
 go get github.com/go-stack/stack
 go get github.com/fjl/gencodec
+go get gopkg.in/fatih/set.v0
+go get github.com/rs/cors
+go get github.com/jackpal/go-nat-pmp
+go get github.com/aristanetworks/goarista
