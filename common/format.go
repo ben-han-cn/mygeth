@@ -1,4 +1,4 @@
-// Copyright 2017 The go-ethereum Authors
+// Copyright 2016 The go-ethereum Authors
 // This file is part of the go-ethereum library.
 //
 // The go-ethereum library is free software: you can redistribute it and/or modify
@@ -14,32 +14,27 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-package hexutil_test
+package common
 
 import (
-	"encoding/json"
 	"fmt"
-
-	"mygeth/common/hexutil"
+	"regexp"
+	"strings"
+	"time"
 )
 
-type MyType [5]byte
+// PrettyDuration is a pretty printed version of a time.Duration value that cuts
+// the unnecessary precision off from the formatted textual representation.
+type PrettyDuration time.Duration
 
-func (v *MyType) UnmarshalText(input []byte) error {
-	return hexutil.UnmarshalFixedText("MyType", input, v[:])
-}
+var prettyDurationRe = regexp.MustCompile(`\.[0-9]+`)
 
-func (v MyType) String() string {
-	return hexutil.Bytes(v[:]).String()
-}
-
-func ExampleUnmarshalFixedText() {
-	var v1, v2 MyType
-	fmt.Println("v1 error:", json.Unmarshal([]byte(`"0x01"`), &v1))
-	fmt.Println("v2 error:", json.Unmarshal([]byte(`"0x0101010101"`), &v2))
-	fmt.Println("v2:", v2)
-	// Output:
-	// v1 error: hex string has length 2, want 10 for MyType
-	// v2 error: <nil>
-	// v2: 0x0101010101
+// String implements the Stringer interface, allowing pretty printing of duration
+// values rounded to three decimals.
+func (d PrettyDuration) String() string {
+	label := fmt.Sprintf("%v", time.Duration(d))
+	if match := prettyDurationRe.FindString(label); len(match) > 4 {
+		label = strings.Replace(label, match, match[:4], 1)
+	}
+	return label
 }
