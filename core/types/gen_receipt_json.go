@@ -38,7 +38,7 @@ func (r Receipt) MarshalJSON() ([]byte, error) {
 
 func (r *Receipt) UnmarshalJSON(input []byte) error {
 	type Receipt struct {
-		PostState         hexutil.Bytes   `json:"root"`
+		PostState         *hexutil.Bytes  `json:"root"`
 		Status            *hexutil.Uint   `json:"status"`
 		CumulativeGasUsed *hexutil.Big    `json:"cumulativeGasUsed" gencodec:"required"`
 		Bloom             *Bloom          `json:"logsBloom"         gencodec:"required"`
@@ -52,7 +52,7 @@ func (r *Receipt) UnmarshalJSON(input []byte) error {
 		return err
 	}
 	if dec.PostState != nil {
-		r.PostState = dec.PostState
+		r.PostState = *dec.PostState
 	}
 	if dec.Status != nil {
 		r.Status = uint(*dec.Status)
