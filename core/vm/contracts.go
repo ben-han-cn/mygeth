@@ -24,7 +24,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/params"
 	"golang.org/x/crypto/ripemd160"
 )
 
@@ -34,7 +33,6 @@ var errBadPrecompileInput = errors.New("bad pre compile input")
 // requires a deterministic gas count based on the input size of the Run method of the
 // contract.
 type PrecompiledContract interface {
-	RequiredGas(input []byte) uint64  // RequiredPrice calculates the contract gas use
 	Run(input []byte) ([]byte, error) // Run runs the precompiled contract
 }
 
@@ -48,20 +46,11 @@ var PrecompiledContracts = map[common.Address]PrecompiledContract{
 
 // RunPrecompile runs and evaluate the output of a precompiled contract defined in contracts.go
 func RunPrecompiledContract(p PrecompiledContract, input []byte, contract *Contract) (ret []byte, err error) {
-	gas := p.RequiredGas(input)
-	if contract.UseGas(gas) {
-		return p.Run(input)
-	} else {
-		return nil, ErrOutOfGas
-	}
+	return p.Run(input)
 }
 
 // ECRECOVER implemented as a native contract
 type ecrecover struct{}
-
-func (c *ecrecover) RequiredGas(input []byte) uint64 {
-	return params.EcrecoverGas
-}
 
 func (c *ecrecover) Run(in []byte) ([]byte, error) {
 	const ecRecoverInputLength = 128
@@ -94,13 +83,6 @@ func (c *ecrecover) Run(in []byte) ([]byte, error) {
 // SHA256 implemented as a native contract
 type sha256hash struct{}
 
-// RequiredGas returns the gas required to execute the pre-compiled contract.
-//
-// This method does not require any overflow checking as the input size gas costs
-// required for anything significant is so high it's impossible to pay for.
-func (c *sha256hash) RequiredGas(input []byte) uint64 {
-	return uint64(len(input)+31)/32*params.Sha256WordGas + params.Sha256Gas
-}
 func (c *sha256hash) Run(in []byte) ([]byte, error) {
 	h := sha256.Sum256(in)
 	return h[:], nil
@@ -109,13 +91,6 @@ func (c *sha256hash) Run(in []byte) ([]byte, error) {
 // RIPMED160 implemented as a native contract
 type ripemd160hash struct{}
 
-// RequiredGas returns the gas required to execute the pre-compiled contract.
-//
-// This method does not require any overflow checking as the input size gas costs
-// required for anything significant is so high it's impossible to pay for.
-func (c *ripemd160hash) RequiredGas(input []byte) uint64 {
-	return uint64(len(input)+31)/32*params.Ripemd160WordGas + params.Ripemd160Gas
-}
 func (c *ripemd160hash) Run(in []byte) ([]byte, error) {
 	ripemd := ripemd160.New()
 	ripemd.Write(in)
@@ -125,13 +100,6 @@ func (c *ripemd160hash) Run(in []byte) ([]byte, error) {
 // data copy implemented as a native contract
 type dataCopy struct{}
 
-// RequiredGas returns the gas required to execute the pre-compiled contract.
-//
-// This method does not require any overflow checking as the input size gas costs
-// required for anything significant is so high it's impossible to pay for.
-func (c *dataCopy) RequiredGas(input []byte) uint64 {
-	return uint64(len(input)+31)/32*params.IdentityWordGas + params.IdentityGas
-}
 func (c *dataCopy) Run(in []byte) ([]byte, error) {
 	return in, nil
 }

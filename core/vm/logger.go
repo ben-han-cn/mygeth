@@ -56,8 +56,6 @@ type LogConfig struct {
 type StructLog struct {
 	Pc         uint64                      `json:"pc"`
 	Op         OpCode                      `json:"op"`
-	Gas        uint64                      `json:"gas"`
-	GasCost    uint64                      `json:"gasCost"`
 	Memory     []byte                      `json:"memory"`
 	MemorySize int                         `json:"memSize"`
 	Stack      []*big.Int                  `json:"stack"`
@@ -68,11 +66,9 @@ type StructLog struct {
 
 // overrides for gencodec
 type structLogMarshaling struct {
-	Stack   []*math.HexOrDecimal256
-	Gas     math.HexOrDecimal64
-	GasCost math.HexOrDecimal64
-	Memory  hexutil.Bytes
-	OpName  string `json:"opName"`
+	Stack  []*math.HexOrDecimal256
+	Memory hexutil.Bytes
+	OpName string `json:"opName"`
 }
 
 func (s *StructLog) OpName() string {
@@ -85,8 +81,8 @@ func (s *StructLog) OpName() string {
 // Note that reference types are actual VM data structures; make copies
 // if you need to retain them beyond the current call.
 type Tracer interface {
-	CaptureState(env *EVM, pc uint64, op OpCode, gas, cost uint64, memory *Memory, stack *Stack, contract *Contract, depth int, err error) error
-	CaptureEnd(output []byte, gasUsed uint64, t time.Duration) error
+	CaptureState(env *EVM, pc uint64, op OpCode, cost uint64, memory *Memory, stack *Stack, contract *Contract, depth int, err error) error
+	CaptureEnd(output []byte, t time.Duration) error
 }
 
 // StructLogger is an EVM state logger and implements Tracer.
@@ -115,7 +111,7 @@ func NewStructLogger(cfg *LogConfig) *StructLogger {
 // CaptureState logs a new structured log message and pushes it out to the environment
 //
 // CaptureState also tracks SSTORE ops to track dirty values.
-func (l *StructLogger) CaptureState(env *EVM, pc uint64, op OpCode, gas, cost uint64, memory *Memory, stack *Stack, contract *Contract, depth int, err error) error {
+func (l *StructLogger) CaptureState(env *EVM, pc uint64, op OpCode, cost uint64, memory *Memory, stack *Stack, contract *Contract, depth int, err error) error {
 	// check if already accumulated the specified number of logs
 	if l.cfg.Limit != 0 && l.cfg.Limit <= len(l.logs) {
 		return ErrTraceLimitReached
@@ -177,13 +173,13 @@ func (l *StructLogger) CaptureState(env *EVM, pc uint64, op OpCode, gas, cost ui
 		}
 	}
 	// create a new snaptshot of the EVM.
-	log := StructLog{pc, op, gas, cost, mem, memory.Len(), stck, storage, depth, err}
+	log := StructLog{pc, op, mem, memory.Len(), stck, storage, depth, err}
 
 	l.logs = append(l.logs, log)
 	return nil
 }
 
-func (l *StructLogger) CaptureEnd(output []byte, gasUsed uint64, t time.Duration) error {
+func (l *StructLogger) CaptureEnd(output []byte, t time.Duration) error {
 	fmt.Printf("0x%x", output)
 	return nil
 }
@@ -196,7 +192,7 @@ func (l *StructLogger) StructLogs() []StructLog {
 // WriteTrace writes a formatted trace to the given writer
 func WriteTrace(writer io.Writer, logs []StructLog) {
 	for _, log := range logs {
-		fmt.Fprintf(writer, "%-10spc=%08d gas=%v cost=%v", log.Op, log.Pc, log.Gas, log.GasCost)
+		fmt.Fprintf(writer, "%-10spc=%08d", log.Op, log.Pc)
 		if log.Err != nil {
 			fmt.Fprintf(writer, " ERROR: %v", log.Err)
 		}

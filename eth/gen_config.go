@@ -8,7 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/eth/gasprice"
 )
 
 func (c Config) MarshalTOML() (interface{}, error) {
@@ -32,7 +31,6 @@ func (c Config) MarshalTOML() (interface{}, error) {
 		EthashDatasetsInMem     int
 		EthashDatasetsOnDisk    int
 		TxPool                  core.TxPoolConfig
-		GPO                     gasprice.Config
 		EnablePreimageRecording bool
 		DocRoot                 string `toml:"-"`
 		PowFake                 bool   `toml:"-"`
@@ -59,7 +57,6 @@ func (c Config) MarshalTOML() (interface{}, error) {
 	enc.EthashDatasetsInMem = c.EthashDatasetsInMem
 	enc.EthashDatasetsOnDisk = c.EthashDatasetsOnDisk
 	enc.TxPool = c.TxPool
-	enc.GPO = c.GPO
 	enc.EnablePreimageRecording = c.EnablePreimageRecording
 	enc.DocRoot = c.DocRoot
 	enc.PowFake = c.PowFake
@@ -89,7 +86,6 @@ func (c *Config) UnmarshalTOML(unmarshal func(interface{}) error) error {
 		EthashDatasetsInMem     *int
 		EthashDatasetsOnDisk    *int
 		TxPool                  *core.TxPoolConfig
-		GPO                     *gasprice.Config
 		EnablePreimageRecording *bool
 		DocRoot                 *string `toml:"-"`
 		PowFake                 *bool   `toml:"-"`
@@ -156,9 +152,6 @@ func (c *Config) UnmarshalTOML(unmarshal func(interface{}) error) error {
 	}
 	if dec.TxPool != nil {
 		c.TxPool = *dec.TxPool
-	}
-	if dec.GPO != nil {
-		c.GPO = *dec.GPO
 	}
 	if dec.EnablePreimageRecording != nil {
 		c.EnablePreimageRecording = *dec.EnablePreimageRecording

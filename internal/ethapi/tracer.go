@@ -317,7 +317,7 @@ func wrapError(context string, err error) error {
 }
 
 // CaptureState implements the Tracer interface to trace a single step of VM execution
-func (jst *JavascriptTracer) CaptureState(env *vm.EVM, pc uint64, op vm.OpCode, gas, cost uint64, memory *vm.Memory, stack *vm.Stack, contract *vm.Contract, depth int, err error) error {
+func (jst *JavascriptTracer) CaptureState(env *vm.EVM, pc uint64, op vm.OpCode, cost uint64, memory *vm.Memory, stack *vm.Stack, contract *vm.Contract, depth int, err error) error {
 	if jst.err == nil {
 		jst.memory.memory = memory
 		jst.stack.stack = stack
@@ -328,8 +328,7 @@ func (jst *JavascriptTracer) CaptureState(env *vm.EVM, pc uint64, op vm.OpCode, 
 
 		jst.log["pc"] = pc
 		jst.log["op"] = ocw.toValue(jst.vm)
-		jst.log["gas"] = gas
-		jst.log["gasPrice"] = cost
+		jst.log["cost"] = cost
 		jst.log["memory"] = jst.memvalue
 		jst.log["stack"] = jst.stackvalue
 		jst.log["contract"] = jst.contractvalue
@@ -346,7 +345,7 @@ func (jst *JavascriptTracer) CaptureState(env *vm.EVM, pc uint64, op vm.OpCode, 
 }
 
 // CaptureEnd is called after the call finishes
-func (jst *JavascriptTracer) CaptureEnd(output []byte, gasUsed uint64, t time.Duration) error {
+func (jst *JavascriptTracer) CaptureEnd(output []byte, t time.Duration) error {
 	//TODO! @Arachnid please figure out of there's anything we can use this method for
 	return nil
 }

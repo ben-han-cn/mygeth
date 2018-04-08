@@ -18,7 +18,6 @@
 package ethstats
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"math/big"
@@ -436,8 +435,6 @@ type blockStats struct {
 	ParentHash common.Hash    `json:"parentHash"`
 	Timestamp  *big.Int       `json:"timestamp"`
 	Miner      common.Address `json:"miner"`
-	GasUsed    *big.Int       `json:"gasUsed"`
-	GasLimit   *big.Int       `json:"gasLimit"`
 	Diff       string         `json:"difficulty"`
 	TotalDiff  string         `json:"totalDifficulty"`
 	Txs        []txStats      `json:"transactions"`
@@ -497,8 +494,6 @@ func (s *Service) assembleBlockStats(block *types.Block) *blockStats {
 		ParentHash: header.ParentHash,
 		Timestamp:  header.Time,
 		Miner:      author,
-		GasUsed:    new(big.Int).Set(header.GasUsed),
-		GasLimit:   new(big.Int).Set(header.GasLimit),
 		Diff:       header.Difficulty.String(),
 		TotalDiff:  td.String(),
 		Txs:        txs,
@@ -590,7 +585,6 @@ type nodeStats struct {
 	Mining   bool `json:"mining"`
 	Hashrate int  `json:"hashrate"`
 	Peers    int  `json:"peers"`
-	GasPrice int  `json:"gasPrice"`
 	Uptime   int  `json:"uptime"`
 }
 
@@ -602,7 +596,6 @@ func (s *Service) reportStats(conn *websocket.Conn) error {
 		mining   bool
 		hashrate int
 		syncing  bool
-		gasprice int
 	)
 	mining = s.eth.Miner().Mining()
 	hashrate = int(s.eth.Miner().HashRate())
@@ -610,8 +603,6 @@ func (s *Service) reportStats(conn *websocket.Conn) error {
 	sync := s.eth.Downloader().Progress()
 	syncing = s.eth.BlockChain().CurrentHeader().Number.Uint64() >= sync.HighestBlock
 
-	price, _ := s.eth.ApiBackend.SuggestPrice(context.Background())
-	gasprice = int(price.Uint64())
 	// Assemble the node stats and send it to the server
 	log.Trace("Sending node details to ethstats")
 
@@ -622,7 +613,6 @@ func (s *Service) reportStats(conn *websocket.Conn) error {
 			Mining:   mining,
 			Hashrate: hashrate,
 			Peers:    s.server.PeerCount(),
-			GasPrice: gasprice,
 			Syncing:  syncing,
 			Uptime:   100,
 		},

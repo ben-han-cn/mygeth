@@ -15,8 +15,6 @@ func (s StructLog) MarshalJSON() ([]byte, error) {
 	type StructLog struct {
 		Pc         uint64                      `json:"pc"`
 		Op         OpCode                      `json:"op"`
-		Gas        math.HexOrDecimal64         `json:"gas"`
-		GasCost    math.HexOrDecimal64         `json:"gasCost"`
 		Memory     hexutil.Bytes               `json:"memory"`
 		MemorySize int                         `json:"memSize"`
 		Stack      []*math.HexOrDecimal256     `json:"stack"`
@@ -28,8 +26,6 @@ func (s StructLog) MarshalJSON() ([]byte, error) {
 	var enc StructLog
 	enc.Pc = s.Pc
 	enc.Op = s.Op
-	enc.Gas = math.HexOrDecimal64(s.Gas)
-	enc.GasCost = math.HexOrDecimal64(s.GasCost)
 	enc.Memory = s.Memory
 	enc.MemorySize = s.MemorySize
 	if s.Stack != nil {
@@ -49,8 +45,6 @@ func (s *StructLog) UnmarshalJSON(input []byte) error {
 	type StructLog struct {
 		Pc         *uint64                     `json:"pc"`
 		Op         *OpCode                     `json:"op"`
-		Gas        *math.HexOrDecimal64        `json:"gas"`
-		GasCost    *math.HexOrDecimal64        `json:"gasCost"`
 		Memory     hexutil.Bytes               `json:"memory"`
 		MemorySize *int                        `json:"memSize"`
 		Stack      []*math.HexOrDecimal256     `json:"stack"`
@@ -67,12 +61,6 @@ func (s *StructLog) UnmarshalJSON(input []byte) error {
 	}
 	if dec.Op != nil {
 		s.Op = *dec.Op
-	}
-	if dec.Gas != nil {
-		s.Gas = uint64(*dec.Gas)
-	}
-	if dec.GasCost != nil {
-		s.GasCost = uint64(*dec.GasCost)
 	}
 	if dec.Memory != nil {
 		s.Memory = dec.Memory
