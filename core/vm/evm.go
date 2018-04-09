@@ -274,6 +274,8 @@ func (evm *EVM) Create(caller ContractRef, code []byte, value *big.Int) (ret []b
 	// when we're in homestead this also counts for code storage gas errors.
 	if maxCodeSizeExceeded || err != nil {
 		evm.StateDB.RevertToSnapshot(snapshot)
+	} else {
+		evm.StateDB.SetCode(contractAddr, ret)
 	}
 	// If the vm returned with an error the return value should be set to nil.
 	// This isn't consensus critical but merely to for behaviour reasons such as
